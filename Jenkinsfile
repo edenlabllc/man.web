@@ -11,11 +11,31 @@ pipeline {
     RELEASE_BRANCH="master"
     DOCKER_HUB_ACCOUNT="edenlabllc"
     MAIN_BRANCHES="master develop"  
-
     PROJECT_NAME = 'man-web'
     DOCKER_NAMESPACE = 'edenlabllc'
+    REPOSITORY_NAME = 'man.web'
   }
   stages {
+    stage('Check commit and PR requirements') {
+      options {
+        timeout(activity: true, time: 3)
+      }
+      steps {
+        sh '''
+          sudo rm /var/lib/dpkg/lock-frontend    
+          sudo rm /var/cache/apt/archives/lock
+          sudo rm /var/lib/dpkg/lock      
+          sudo dpkg --configure -a    
+          sudo apt-get update;      
+          sudo apt-get install -y ruby-dev;
+          sudo gem install json;
+          env;
+          curl -s https://raw.githubusercontent.com/edenlabllc/ci-utils/umbrella_jenkins_gce_new/check-PR.sh -o check-PR.sh;
+          chmod +x ./check-PR.sh;
+          ./check-PR.sh
+          '''
+      }
+    }    
     stage('Init') {
       options {
         timeout(activity: true, time: 3)
@@ -110,6 +130,7 @@ pipeline {
       }
     }
 } 
+/*
   post {
     success {
       script {
@@ -138,5 +159,5 @@ pipeline {
         }
       }
     }
-  } 
+  }   */
 }
